@@ -1,0 +1,21 @@
+package {{.Package}}
+
+const TableName{{.StructName}} = "{{.TableName}}"
+
+var {{.StructName}}Columns = struct {
+    {{range .Members}}{{.Name}}    string
+    {{end}}
+}{
+    {{range .Members}}{{.Name}}: "`{{.ColumnName}}`",
+    {{end}}
+}
+
+type {{.StructName}} struct {
+    {{range .Members}}
+    {{.Name}} {{.ModelType}} `json:"{{.JSONTag}}"`  //{{.ColumnComment}}{{end}}
+}
+
+// TableName {{.StructName}}'s table name
+func (*{{.StructName}}) TableName() string {
+    return TableName{{.StructName}}
+}
