@@ -16,7 +16,9 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
+	"github.com/seanlan/lazy/generator"
+	"go.uber.org/zap"
+	"os/exec"
 
 	"github.com/spf13/cobra"
 )
@@ -24,19 +26,33 @@ import (
 // daoCmd represents the dao command
 var daoCmd = &cobra.Command{
 	Use:   "dao",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "generate gorm dao model",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("dao called")
+		zap.S().Info()
+		//dbStr ,_ := cmd.Flags().GetString("conn")
+		dbStr := "root:q145145145@tcp(127.0.0.1:3306)/mutual?parseTime=true&loc=Local&charset=utf8mb4&collation=utf8mb4_unicode_ci"
+		database := "mutual"
+		packageName := "github.com/seanlan/lazy"
+		tmplPath := "./templates"
+		modelPackage := "sqlmodel"
+		modelPath := "dao/sqlmodel"
+		daoPackage := "dao"
+		daoPath := "./dao"
+		g := generator.NewGormGenerator(dbStr, database, packageName, tmplPath,
+			modelPackage, modelPath, daoPackage, daoPath)
+		if g == nil {
+			return
+		}
+		g.Gen()
+		osCmd := exec.Command("gofmt", "-s", "-d", "-w", ".")
+		osCmd.Run()
 	},
 }
 
 func init() {
+	daoCmd.Flags().String("conn", "", "mysql grom conn dial")
+	daoCmd.MarkFlagRequired("conn")
+	daoCmd.Flags().String("database", "", "mysql grom conn dial")
 	rootCmd.AddCommand(daoCmd)
 
 	// Here you will define your flags and configuration settings.

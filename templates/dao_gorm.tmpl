@@ -1,0 +1,101 @@
+package {{.DaoPackageName}}
+
+import (
+    "context"
+	"{{.ModelFQPN}}"
+)
+
+func Count{{.StructName}}(ctx context.Context, m map[string]interface{}, conds ...interface{}) (totalRows int64, err error) {
+	db := GetDB(ctx).WithContext(ctx).Model(&{{.ModelPackageName}}.{{.StructName}}{}).Where(m, conds...)
+	db.Count(&totalRows)
+	return totalRows, nil
+}
+
+func Sum{{.StructName}}(ctx context.Context, m map[string]interface{}, sumField string, conds ...interface{}) (sum int64, err error) {
+	var sumValue = struct {
+		N int64 `json:"n"`
+	}{}
+	db := GetDB(ctx).WithContext(ctx).Model(&{{.ModelPackageName}}.{{.StructName}}{}).Where(m, conds...)
+	err = db.Select("sum("+sumField+") as n").Scan(&sumValue).Error
+	return sumValue.N, err
+}
+
+func FetchAll{{.StructName}}(ctx context.Context, m map[string]interface{}, records interface{}, page, pagesize int, order string, conds ...interface{}) (totalRows int64, err error) {
+	db := GetDB(ctx).WithContext(ctx).Model(&{{.ModelPackageName}}.{{.StructName}}{}).Where(m, conds...)
+	db.Count(&totalRows)
+	if page > 0 {
+		offset := (page - 1) * pagesize
+		db = db.Offset(offset).Limit(pagesize)
+	} else {
+		db = db.Limit(pagesize)
+	}
+	if order != "" {
+		db = db.Order(order)
+	}
+	if err = db.Find(records).Error; err != nil {
+		err = ErrNotFound
+		return -1, err
+	}
+	return totalRows, nil
+}
+
+func Fetch{{.StructName}}(ctx context.Context, m map[string]interface{}, record interface{}, conds ...interface{}) (err error) {
+	db := GetDB(ctx).WithContext(ctx).Model(&{{.ModelPackageName}}.{{.StructName}}{}).Where(m, conds...)
+	if err = db.First(record).Error; err != nil {
+		err = ErrNotFound
+		return err
+	}
+	return nil
+}
+
+func Fetch{{.StructName}}Last(ctx context.Context, m map[string]interface{}, record interface{}, conds ...interface{}) (err error) {
+    db := GetDB(ctx).WithContext(ctx).Model(&{{.ModelPackageName}}.{{.StructName}}{}).Where(m, conds...)
+    if err = db.Last(record).Error; err != nil {
+        err = ErrNotFound
+        return err
+    }
+    return nil
+}
+
+func Add{{.StructName}}(ctx context.Context, d *{{.ModelPackageName}}.{{.StructName}}) (RowsAffected int64, err error) {
+	db := GetDB(ctx).WithContext(ctx).Model(&{{.ModelPackageName}}.{{.StructName}}{}).Create(d)
+	if err = db.Error; err != nil {
+		return -1, ErrInsertFailed
+	}
+	return db.RowsAffected, nil
+}
+
+func Adds{{.StructName}}(ctx context.Context, d *[]{{.ModelPackageName}}.{{.StructName}}) (RowsAffected int64, err error) {
+	db := GetDB(ctx).WithContext(ctx).Model(&{{.ModelPackageName}}.{{.StructName}}{}).Create(d)
+	if err = db.Error; err != nil {
+		return -1, ErrInsertFailed
+	}
+	return db.RowsAffected, nil
+}
+
+func Update{{.StructName}}(ctx context.Context, updated *{{.ModelPackageName}}.{{.StructName}}) (RowsAffected int64, err error) {
+	db := GetDB(ctx).WithContext(ctx).Save(updated)
+	if err = db.Error; err != nil {
+		return -1, ErrUpdateFailed
+	}
+	return db.RowsAffected, nil
+}
+
+func Updates{{.StructName}}(ctx context.Context, m map[string]interface{}, updated map[string]interface{}, conds ...interface{}) (RowsAffected int64, err error) {
+	db := GetDB(ctx).WithContext(ctx).Model(&{{.ModelPackageName}}.{{.StructName}}{}).Where(m, conds...)
+	db = db.Updates(updated)
+	if err = db.Error; err != nil {
+		return -1, err
+	}
+	return db.RowsAffected, nil
+}
+
+func Delete{{.StructName}}(ctx context.Context, m *{{.ModelPackageName}}.{{.StructName}}, conds ...interface{}) (rowsAffected int64, err error) {
+	db := GetDB(ctx).WithContext(ctx).Model(&{{.ModelPackageName}}.{{.StructName}}{}).Where(m, conds...)
+	db = db.Delete({{.ModelPackageName}}.{{.StructName}}{})
+	if err = db.Error; err != nil {
+		return -1, err
+	}
+	return db.RowsAffected, nil
+}
+

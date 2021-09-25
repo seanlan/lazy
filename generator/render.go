@@ -11,7 +11,6 @@ import (
 func render(outPath, tmplPaht string, data interface{}, cover bool) {
 	var buff bytes.Buffer
 	var content string
-	zap.S().Info(tmplPaht)
 	tmpl, err := template.ParseFiles(tmplPaht)
 	if err != nil {
 		zap.S().Info(err)

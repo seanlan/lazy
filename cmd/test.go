@@ -16,30 +16,21 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/seanlan/lazy/generator"
 	"github.com/spf13/cobra"
-	"os/exec"
+	"go.uber.org/zap"
 )
 
 // testCmd represents the test command
 var testCmd = &cobra.Command{
-	Use: "test",
+	Use:   "test",
+	Short: "test command",
 	Run: func(cmd *cobra.Command, args []string) {
-
-		dbStr := "root:q145145145@tcp(127.0.0.1:3306)/mutual?parseTime=true&loc=Local&charset=utf8mb4&collation=utf8mb4_unicode_ci"
-		tableName := "mutual"
-		outPath := "./sqlmodel"
-		packageName := "sqlmodel"
-		tmplPath := "./templates"
-
-		g := generator.NewGormGenerator(dbStr, tableName, packageName, tmplPath, outPath)
-		g.Gen()
-		osCmd := exec.Command("gofmt", "-s", "-d", "-w", ".")
-		osCmd.Run()
+		zap.S().Info(cmd.Flags().GetString("conn"))
 	},
 }
 
 func init() {
+	testCmd.PersistentFlags().String("conn", "", "mysql conn dail")
 	rootCmd.AddCommand(testCmd)
 
 	// Here you will define your flags and configuration settings.

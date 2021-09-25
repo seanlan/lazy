@@ -6,40 +6,42 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
 
-type GormModelGenerator struct {
-	DB          *gorm.DB
-	PackageName string
-	Database    string
-	OutPath     string
-	TmplPaht    string
+type GormDaoGenerator struct {
+	DB               *gorm.DB
+	PackageName      string
+	ModelPackageName string
+	ModelPath        string
+	DaoPackageName   string
+	DaoPath          string
+	Database         string
+	TmplPaht         string
 }
 
-func NewGormGenerator(connStr, database, packageName, tmplPath, outPath string) *GormModelGenerator {
-	if !strings.HasSuffix(tmplPath, "/") {
-		tmplPath += "/"
-	}
-	if !strings.HasSuffix(outPath, "/") {
-		outPath += "/"
-	}
+func NewGormGenerator(connStr, database, packageName, tmplPath, modelPackage, modelPath, daoPackage, daoPath string) *GormDaoGenerator {
 	db, err := gorm.Open(mysql.Open(connStr), &gorm.Config{})
 	if err != nil {
-		panic(err)
+		zap.S().Info("mysql connect failed ")
+		return nil
 	}
-	return &GormModelGenerator{
-		DB:          db,
-		PackageName: packageName,
-		Database:    database,
-		OutPath:     outPath,
-		TmplPaht:    tmplPath,
+	return &GormDaoGenerator{
+		DB:               db,
+		PackageName:      packageName,
+		ModelPackageName: modelPackage,
+		ModelPath:        modelPath,
+		DaoPackageName:   daoPackage,
+		DaoPath:          daoPath,
+		Database:         database,
+		TmplPaht:         tmplPath,
 	}
 }
 
 // Tables 获取所有数据表 不包含分表
-func (g *GormModelGenerator) Tables() (dbTables []string) {
+func (g *GormDaoGenerator) Tables() (dbTables []string) {
 	sqlDB, _ := g.DB.DB()
 	schemaTables, _ := schema.TableNames(sqlDB)
 	for _, st := range schemaTables {
@@ -58,39 +60,65 @@ func (g *GormModelGenerator) Tables() (dbTables []string) {
 	return
 }
 
-func (g *GormModelGenerator) GenTableStruct(tableName string) BaseStruct {
+func (g *GormDaoGenerator) GenTableStruct(tableName string) BaseStruct {
 	base := BaseStruct{
-		Package:    g.PackageName,
+		Package:    g.ModelPackageName,
 		StructName: g.DB.NamingStrategy.SchemaName(tableName),
 		TableName:  tableName,
 	}
 	cols, _ := getTbColumns(g.DB, g.Database, tableName)
 	for _, col := range cols {
-		zap.S().Info(col.ColumnType)
 		m := toMember(col)
 		m.Name = g.DB.NamingStrategy.SchemaName(m.Name)
 		base.Members = append(base.Members, m)
-
 	}
 	return base
 }
 
-func (g *GormModelGenerator) Models() (models []BaseStruct) {
-	for _, table := range g.Tables() {
-		models = append(models, g.GenTableStruct(table))
+func (g *GormDaoGenerator) GenDaoStruct(tableName string) DaoStruct {
+	dao := DaoStruct{
+		StructName:       g.DB.NamingStrategy.SchemaName(tableName),
+		DaoPackageName:   g.DaoPackageName,
+		ModelPackageName: g.ModelPackageName,
+		ModelFQPN:        filepath.Join(g.PackageName, g.ModelPath),
 	}
-	return
+	return dao
 }
 
-func (g *GormModelGenerator) Gen() {
-	var models []BaseStruct
+func (g *GormDaoGenerator) Gen() {
+	var sqlModels []BaseStruct
+	var daoModels []DaoStruct
 	for _, table := range g.Tables() {
-		models = append(models, g.GenTableStruct(table))
+		sqlModels = append(sqlModels, g.GenTableStruct(table))
+		daoModels = append(daoModels, g.GenDaoStruct(table))
 	}
-	os.MkdirAll(g.OutPath, os.ModePerm)
-	for _, model := range g.Models() {
-		outFile := g.OutPath + model.TableName + ".go"
-		tmplFile := g.TmplPaht + "gorm_model.tmpl"
+	modelOutPath := g.ModelPath
+	err := os.MkdirAll(modelOutPath, os.ModePerm)
+	if err != nil {
+		zap.S().Info("mkdir error : " + modelOutPath)
+		return
+	}
+	for _, model := range sqlModels {
+		outFile := filepath.Join(modelOutPath, model.TableName+".go")
+		tmplFile := filepath.Join(g.TmplPaht, "gorm_model.tmpl")
 		render(outFile, tmplFile, model, true)
+		zap.S().Info("generate model " + outFile + " success !")
+	}
+	daoOutPath := g.DaoPath
+	err = os.MkdirAll(daoOutPath, os.ModePerm)
+	if err != nil {
+		zap.S().Info("mkdir error : " + daoOutPath)
+		return
+	}
+	daoBaseFile := filepath.Join(daoOutPath, "dao_base.go")
+	tmplFile := filepath.Join(g.TmplPaht, "dao_gorm_base.tmpl")
+	render(daoBaseFile, tmplFile, DaoBaseStruct{g.DaoPackageName}, true)
+	zap.S().Info("generate dao " + daoBaseFile + " success !")
+	for _, dao := range daoModels {
+		daoName := g.DB.NamingStrategy.TableName(dao.StructName)
+		outFile := filepath.Join(daoOutPath, daoName+".go")
+		tmplFile := filepath.Join(g.TmplPaht, "dao_gorm.tmpl")
+		render(outFile, tmplFile, dao, true)
+		zap.S().Info("generate dao " + outFile + " success !")
 	}
 }

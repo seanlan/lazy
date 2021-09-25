@@ -1,0 +1,92 @@
+package {{.DaoPackageName}}
+
+import (
+	"context"
+	"fmt"
+	"gorm.io/gorm/clause"
+	"log"
+	"reflect"
+	"gorm.io/gorm"
+)
+
+type ctxTransactionKey struct{}
+
+func CtxWithTransaction(ctx context.Context, db *gorm.DB) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return context.WithValue(ctx, ctxTransactionKey{}, db)
+}
+
+// 如果使用跨模型事务则传参
+func GetDB(ctx context.Context) *gorm.DB {
+	iface := ctx.Value(ctxTransactionKey{})
+	if iface != nil {
+		tx, ok := iface.(*gorm.DB)
+		if !ok {
+			log.Panicf("unexpect context value type: %s", reflect.TypeOf(tx))
+			return nil
+		}
+		return tx
+	}
+	return DB.WithContext(ctx)
+}
+
+type M map[string]interface{}
+
+func E(expr string, args ...interface{}) clause.Expr {
+	return clause.Expr{SQL: expr, Vars: args}
+}
+
+// BuildInfo is used to define the application build info, and inject values into via the build process.
+type BuildInfo struct {
+
+    // BuildDate date string of when build was performed filled in by -X compile flag
+	BuildDate    string
+
+	// LatestCommit date string of when build was performed filled in by -X compile flag
+	LatestCommit string
+
+	// BuildNumber date string of when build was performed filled in by -X compile flag
+	BuildNumber  string
+
+	// BuiltOnIP date string of when build was performed filled in by -X compile flag
+	BuiltOnIP    string
+
+	// BuiltOnOs date string of when build was performed filled in by -X compile flag
+	BuiltOnOs    string
+
+	// RuntimeVer date string of when build was performed filled in by -X compile flag
+	RuntimeVer   string
+}
+
+type LogSql func(ctx context.Context, sql string)
+
+var (
+    // ErrNotFound error when record not found
+	ErrNotFound  = fmt.Errorf("record Not Found")
+
+	// ErrUnableToMarshalJSON error when json payload corrupt
+    ErrUnableToMarshalJSON  = fmt.Errorf("json payload corrupt")
+
+    // ErrUpdateFailed error when update fails
+	ErrUpdateFailed  = fmt.Errorf("db update error")
+
+	// ErrInsertFailed error when insert fails
+	ErrInsertFailed  = fmt.Errorf("db insert error")
+
+	// ErrDeleteFailed error when delete fails
+	ErrDeleteFailed  = fmt.Errorf("db delete error")
+
+	// ErrBadParams error when bad params passed in
+	ErrBadParams  = fmt.Errorf("bad params error")
+
+    // DB reference to database
+	DB           *gorm.DB
+
+	// AppBuildInfo reference to build info
+	AppBuildInfo *BuildInfo
+
+	// Logger function that will be invoked before executing sql
+	Logger LogSql
+)
