@@ -6,5 +6,4 @@ import (
 
 func init() {
 	packr.New("lazy", "../templates")
-	//zap.S().Info(b.FindString("dao_gorm.tmpl"))
 }

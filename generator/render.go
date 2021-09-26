@@ -22,7 +22,7 @@ func render(outPath, tmplDir, tmplName string, data interface{}, cover bool) {
 			return
 		}
 	} else {
-		content, err := packr.New("lazy", "../templates").FindString(tmplName)
+		content, err := packr.New("lazy", "").FindString(tmplName)
 		if err != nil {
 			zap.S().Info(err)
 			return
