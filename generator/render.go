@@ -3,18 +3,35 @@ package generator
 import (
 	"bufio"
 	"bytes"
+	"github.com/gobuffalo/packr/v2"
 	"go.uber.org/zap"
 	"os"
+	"path/filepath"
 	"text/template"
 )
 
-func render(outPath, tmplPaht string, data interface{}, cover bool) {
+func render(outPath, tmplDir, tmplName string, data interface{}, cover bool) {
+	var err error
 	var buff bytes.Buffer
 	var content string
-	tmpl, err := template.ParseFiles(tmplPaht)
-	if err != nil {
-		zap.S().Info(err)
-		return
+	var tmpl *template.Template
+	if tmplDir != "" {
+		tmpl, err = template.ParseFiles(filepath.Join(tmplDir, tmplName))
+		if err != nil {
+			zap.S().Info(err)
+			return
+		}
+	} else {
+		content, err := packr.New("lazy", "../templates").FindString(tmplName)
+		if err != nil {
+			zap.S().Info(err)
+			return
+		}
+		tmpl, err = template.New(tmplName).Parse(content)
+		if err != nil {
+			zap.S().Info(err)
+			return
+		}
 	}
 	err = tmpl.Execute(&buff, data)
 	if err != nil {

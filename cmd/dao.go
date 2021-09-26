@@ -17,10 +17,9 @@ package cmd
 
 import (
 	"github.com/seanlan/lazy/generator"
+	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"os/exec"
-
-	"github.com/spf13/cobra"
 )
 
 // daoCmd represents the dao command
@@ -29,15 +28,22 @@ var daoCmd = &cobra.Command{
 	Short: "generate gorm dao model",
 	Run: func(cmd *cobra.Command, args []string) {
 		zap.S().Info()
-		//dbStr ,_ := cmd.Flags().GetString("conn")
-		dbStr := "root:q145145145@tcp(127.0.0.1:3306)/mutual?parseTime=true&loc=Local&charset=utf8mb4&collation=utf8mb4_unicode_ci"
-		database := "mutual"
-		packageName := "github.com/seanlan/lazy"
-		tmplPath := "./templates"
-		modelPackage := "sqlmodel"
-		modelPath := "dao/sqlmodel"
-		daoPackage := "dao"
-		daoPath := "./dao"
+		dbStr, _ := cmd.Flags().GetString("conn")
+		database, _ := cmd.Flags().GetString("database")
+		packageName, _ := cmd.Flags().GetString("package")
+		tmplPath, _ := cmd.Flags().GetString("template")
+		modelPackage, _ := cmd.Flags().GetString("model")
+		modelPath, _ := cmd.Flags().GetString("model-path")
+		daoPackage, _ := cmd.Flags().GetString("dao")
+		daoPath, _ := cmd.Flags().GetString("dao-path")
+		//dbStr := "root:q145145145@tcp(127.0.0.1:3306)/mutual?parseTime=true&loc=Local&charset=utf8mb4&collation=utf8mb4_unicode_ci"
+		//database := "mutual"
+		//packageName := "github.com/seanlan/lazy"
+		//tmplPath := "./templates"
+		//modelPackage := "sqlmodel"
+		//modelPath := "dao/sqlmodel"
+		//daoPackage := "dao"
+		//daoPath := "./dao"
 		g := generator.NewGormGenerator(dbStr, database, packageName, tmplPath,
 			modelPackage, modelPath, daoPackage, daoPath)
 		if g == nil {
@@ -52,7 +58,15 @@ var daoCmd = &cobra.Command{
 func init() {
 	daoCmd.Flags().String("conn", "", "mysql grom conn dial")
 	daoCmd.MarkFlagRequired("conn")
-	daoCmd.Flags().String("database", "", "mysql grom conn dial")
+	daoCmd.Flags().String("database", "", "mysql select database name")
+	daoCmd.MarkFlagRequired("database")
+	daoCmd.Flags().String("package", "", "project package name")
+	daoCmd.MarkFlagRequired("package")
+	daoCmd.Flags().String("template", "", "template dir")
+	daoCmd.Flags().String("model", "model", "db model package name")
+	daoCmd.Flags().String("model-path", "model", "db model out dir")
+	daoCmd.Flags().String("dao", "dao", "dao package name")
+	daoCmd.Flags().String("dao-path", "dao", "dao out dir")
 	rootCmd.AddCommand(daoCmd)
 
 	// Here you will define your flags and configuration settings.

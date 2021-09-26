@@ -18,6 +18,7 @@ package main
 import (
 	"github.com/seanlan/lazy/cmd"
 	_ "github.com/seanlan/lazy/init"
+	_ "github.com/seanlan/lazy/packrd"
 )
 
 func main() {

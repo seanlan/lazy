@@ -19,7 +19,7 @@ type GormDaoGenerator struct {
 	DaoPackageName   string
 	DaoPath          string
 	Database         string
-	TmplPaht         string
+	TmplPath         string
 }
 
 func NewGormGenerator(connStr, database, packageName, tmplPath, modelPackage, modelPath, daoPackage, daoPath string) *GormDaoGenerator {
@@ -36,7 +36,7 @@ func NewGormGenerator(connStr, database, packageName, tmplPath, modelPackage, mo
 		DaoPackageName:   daoPackage,
 		DaoPath:          daoPath,
 		Database:         database,
-		TmplPaht:         tmplPath,
+		TmplPath:         tmplPath,
 	}
 }
 
@@ -100,8 +100,7 @@ func (g *GormDaoGenerator) Gen() {
 	}
 	for _, model := range sqlModels {
 		outFile := filepath.Join(modelOutPath, model.TableName+".go")
-		tmplFile := filepath.Join(g.TmplPaht, "gorm_model.tmpl")
-		render(outFile, tmplFile, model, true)
+		render(outFile, g.TmplPath, "gorm_model.tmpl", model, true)
 		zap.S().Info("generate model " + outFile + " success !")
 	}
 	daoOutPath := g.DaoPath
@@ -111,14 +110,13 @@ func (g *GormDaoGenerator) Gen() {
 		return
 	}
 	daoBaseFile := filepath.Join(daoOutPath, "dao_base.go")
-	tmplFile := filepath.Join(g.TmplPaht, "dao_gorm_base.tmpl")
-	render(daoBaseFile, tmplFile, DaoBaseStruct{g.DaoPackageName}, true)
+	render(daoBaseFile, g.TmplPath, "dao_gorm_base.tmpl",
+		DaoBaseStruct{g.DaoPackageName}, true)
 	zap.S().Info("generate dao " + daoBaseFile + " success !")
 	for _, dao := range daoModels {
 		daoName := g.DB.NamingStrategy.TableName(dao.StructName)
 		outFile := filepath.Join(daoOutPath, daoName+".go")
-		tmplFile := filepath.Join(g.TmplPaht, "dao_gorm.tmpl")
-		render(outFile, tmplFile, dao, true)
+		render(outFile, g.TmplPath, "dao_gorm.tmpl", dao, true)
 		zap.S().Info("generate dao " + outFile + " success !")
 	}
 }
