@@ -1,0 +1,13 @@
+{{if .NewFile}}
+package service
+
+import (
+	"context"
+	"{{.PackageName}}/app/e"
+	"{{.PackageName}}/app/model"
+)
+{{end}}
+func {{.ServiceName}}(ctx context.Context, userID int64, req model.{{.ReqStructName}}) (ecode int, resp model.{{.RespStructName}}) {
+	ecode = e.SUCCESS
+	return
+}

@@ -1,0 +1,27 @@
+{{if .NewFile}}
+package v1
+
+import (
+	"github.com/gin-gonic/gin"
+	"{{.PackageName}}/app/api"
+	"{{.PackageName}}/app/e"
+	"{{.PackageName}}/app/middleware"
+	"{{.PackageName}}/app/model"
+	"{{.PackageName}}/app/service"
+)
+{{end}}
+func {{.ApiName}}(c *gin.Context) {
+	userID, err := middleware.GetUID(c)
+	if userID == 0 || err != nil {
+		api.JsonExit(c, e.TOKEN_ERROR)
+		return
+	}
+	var req model.{{.ReqStructName}}
+	err = api.RequestParser(&req, c)
+	if err != nil {
+		return
+	}
+	code, resp := service.{{.ServiceName}}(c, userID, req)
+	api.JsonExit(c, code, resp)
+	return
+}

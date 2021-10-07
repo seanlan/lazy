@@ -16,8 +16,10 @@ limitations under the License.
 package cmd
 
 import (
+	"bytes"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	"text/template"
 )
 
 // testCmd represents the test command
@@ -25,12 +27,24 @@ var testCmd = &cobra.Command{
 	Use:   "test",
 	Short: "test command",
 	Run: func(cmd *cobra.Command, args []string) {
-		zap.S().Info(cmd.Flags().GetString("conn"))
+		tmp := `{{if .result}} 1111 {{else}} 2222 {{end}}`
+		tmpl, err := template.New("name").Parse(tmp)
+		if err != nil {
+			zap.S().Info(err)
+			return
+		}
+		data := map[string]interface{}{"result": false}
+		var buff bytes.Buffer
+		err = tmpl.Execute(&buff, data)
+		if err != nil {
+			zap.S().Info(err)
+			return
+		}
+		zap.S().Info(buff.String())
 	},
 }
 
 func init() {
-	testCmd.PersistentFlags().String("conn", "", "mysql conn dail")
 	rootCmd.AddCommand(testCmd)
 
 	// Here you will define your flags and configuration settings.

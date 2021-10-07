@@ -4,7 +4,7 @@ import "go.uber.org/zap"
 
 func init() {
 	conf := zap.NewDevelopmentConfig()
-	conf.DisableCaller = true
+	//conf.DisableCaller = true
 	logger, _ := conf.Build()
 	zap.ReplaceGlobals(logger)
 }
