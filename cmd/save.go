@@ -36,6 +36,9 @@ var saveCmd = &cobra.Command{
 			"dao_gorm.tmpl",
 			"dao_gorm_base.tmpl",
 			"gorm_model.tmpl",
+			"gin_model.tmpl",
+			"gin_api.tmpl",
+			"gin_service.tmpl",
 		} {
 			outPath := filepath.Join(savePath, t)
 			content, err := box.FindString(t)
