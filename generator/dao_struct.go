@@ -5,6 +5,7 @@ type DaoBaseStruct struct {
 }
 
 type DaoStruct struct {
+	TableName        string
 	StructName       string
 	DaoPackageName   string
 	ModelPackageName string

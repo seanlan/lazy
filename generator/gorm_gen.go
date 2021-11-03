@@ -77,6 +77,7 @@ func (g *GormDaoGenerator) GenTableStruct(tableName string) BaseStruct {
 
 func (g *GormDaoGenerator) GenDaoStruct(tableName string) DaoStruct {
 	dao := DaoStruct{
+		TableName:        tableName,
 		StructName:       g.DB.NamingStrategy.SchemaName(tableName),
 		DaoPackageName:   g.DaoPackageName,
 		ModelPackageName: g.ModelPackageName,
@@ -100,7 +101,7 @@ func (g *GormDaoGenerator) Gen() {
 	}
 	for _, model := range sqlModels {
 		outFile := filepath.Join(modelOutPath, model.TableName+".go")
-		RenderWithStruct(outFile, g.TmplPath, "gorm_model.tmpl", model, true)
+		RenderWithStruct(outFile, g.TmplPath, "dao_gorm_model.tmpl", model, true)
 		zap.S().Info("generate model " + outFile + " success !")
 	}
 	daoOutPath := g.DaoPath
@@ -114,7 +115,7 @@ func (g *GormDaoGenerator) Gen() {
 		DaoBaseStruct{g.DaoPackageName}, true)
 	zap.S().Info("generate dao " + daoBaseFile + " success !")
 	for _, dao := range daoModels {
-		daoName := g.DB.NamingStrategy.TableName(dao.StructName)
+		daoName := dao.TableName
 		outFile := filepath.Join(daoOutPath, daoName+".go")
 		RenderWithStruct(outFile, g.TmplPath, "dao_gorm.tmpl", dao, true)
 		zap.S().Info("generate dao " + outFile + " success !")

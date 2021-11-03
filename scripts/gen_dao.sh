@@ -1,4 +1,4 @@
-dbuser="root"
+dbuser=$1
 dbpwd="q145145145"
 dbhost="127.0.0.1:3306"
 dbname="mutual"
@@ -9,6 +9,5 @@ modelPackage="sqlmodel"
 modelPath="app/dao/sqlmodel"
 daoPackage="dao"
 daoPath="app/dao"
-lazy --conn=$conn --database=$dbname --package=$package --template=$template \
+go run main.go dao --conn=$conn --database=$dbname --package=$package --template=$template \
  --model=$modelPackage --model-path=$modelPath --dao=$daoPackage --dao-path=$daoPath
-

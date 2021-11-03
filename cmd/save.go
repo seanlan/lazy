@@ -35,7 +35,7 @@ var saveCmd = &cobra.Command{
 		for _, t := range []string{
 			"dao_gorm.tmpl",
 			"dao_gorm_base.tmpl",
-			"gorm_model.tmpl",
+			"dao_gorm_model.tmpl",
 			"gin_model.tmpl",
 			"gin_api.tmpl",
 			"gin_service.tmpl",
