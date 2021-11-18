@@ -1,4 +1,4 @@
-dbuser=$1
+dbuser="root"
 dbpwd="q145145145"
 dbhost="127.0.0.1:3306"
 dbname="mutual"

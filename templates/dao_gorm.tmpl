@@ -90,7 +90,7 @@ func Updates{{.StructName}}(ctx context.Context, m map[string]interface{}, updat
 	return db.RowsAffected, nil
 }
 
-func Delete{{.StructName}}(ctx context.Context, m *{{.ModelPackageName}}.{{.StructName}}, conds ...interface{}) (rowsAffected int64, err error) {
+func Delete{{.StructName}}(ctx context.Context, m map[string]interface{}, conds ...interface{}) (rowsAffected int64, err error) {
 	db := GetDB(ctx).WithContext(ctx).Model(&{{.ModelPackageName}}.{{.StructName}}{}).Where(m, conds...)
 	db = db.Delete({{.ModelPackageName}}.{{.StructName}}{})
 	if err = db.Error; err != nil {

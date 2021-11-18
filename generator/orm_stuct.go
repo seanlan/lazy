@@ -1,6 +1,8 @@
 package generator
 
 import (
+	"bytes"
+	"fmt"
 	"gorm.io/gorm"
 	"strings"
 )
@@ -16,33 +18,63 @@ const (
 var (
 	defaultDataType             = "string"
 	dataType        dataTypeMap = map[string]func(detailType string) string{
-		"int":        func(string) string { return "int32" },
-		"integer":    func(string) string { return "int32" },
-		"smallint":   func(string) string { return "int32" },
-		"mediumint":  func(string) string { return "int32" },
-		"bigint":     func(string) string { return "int64" },
-		"float":      func(string) string { return "float32" },
-		"double":     func(string) string { return "float64" },
-		"decimal":    func(string) string { return "float64" },
-		"char":       func(string) string { return "string" },
-		"varchar":    func(string) string { return "string" },
-		"tinytext":   func(string) string { return "string" },
-		"mediumtext": func(string) string { return "string" },
-		"longtext":   func(string) string { return "string" },
-		"tinyblob":   func(string) string { return "[]byte" },
-		"blob":       func(string) string { return "[]byte" },
-		"mediumblob": func(string) string { return "[]byte" },
-		"longblob":   func(string) string { return "[]byte" },
-		"text":       func(string) string { return "string" },
-		"json":       func(string) string { return "string" },
-		"enum":       func(string) string { return "string" },
-		"time":       func(string) string { return "time.Time" },
-		"date":       func(string) string { return "time.Time" },
-		"datetime":   func(string) string { return "time.Time" },
-		"timestamp":  func(string) string { return "time.Time" },
-		"year":       func(string) string { return "int32" },
-		"bit":        func(string) string { return "[]uint8" },
-		"boolean":    func(string) string { return "bool" },
+		"int": func(ct string) string {
+			if strings.Contains(ct, "unsigned") {
+				return "uint32"
+			} else {
+				return "int32"
+			}
+		},
+		"integer": func(ct string) string {
+			if strings.Contains(ct, "unsigned") {
+				return "uint32"
+			} else {
+				return "int32"
+			}
+		},
+		"smallint": func(ct string) string {
+			if strings.Contains(ct, "unsigned") {
+				return "uint32"
+			} else {
+				return "int32"
+			}
+		},
+		"mediumint": func(ct string) string {
+			if strings.Contains(ct, "unsigned") {
+				return "uint32"
+			} else {
+				return "int32"
+			}
+		},
+		"bigint": func(ct string) string {
+			if strings.Contains(ct, "unsigned") {
+				return "uint64"
+			} else {
+				return "int64"
+			}
+		},
+		"float":      func(ct string) string { return "float32" },
+		"double":     func(ct string) string { return "float64" },
+		"decimal":    func(ct string) string { return "float64" },
+		"char":       func(ct string) string { return "string" },
+		"varchar":    func(ct string) string { return "string" },
+		"tinytext":   func(ct string) string { return "string" },
+		"mediumtext": func(ct string) string { return "string" },
+		"longtext":   func(ct string) string { return "string" },
+		"tinyblob":   func(ct string) string { return "[]byte" },
+		"blob":       func(ct string) string { return "[]byte" },
+		"mediumblob": func(ct string) string { return "[]byte" },
+		"longblob":   func(ct string) string { return "[]byte" },
+		"text":       func(ct string) string { return "string" },
+		"json":       func(ct string) string { return "string" },
+		"enum":       func(ct string) string { return "string" },
+		"time":       func(ct string) string { return "time.Time" },
+		"date":       func(ct string) string { return "time.Time" },
+		"datetime":   func(ct string) string { return "time.Time" },
+		"timestamp":  func(ct string) string { return "time.Time" },
+		"year":       func(ct string) string { return "int32" },
+		"bit":        func(ct string) string { return "[]uint8" },
+		"boolean":    func(ct string) string { return "bool" },
 		"tinyint": func(detailType string) string {
 			if strings.HasPrefix(detailType, "tinyint(1)") {
 				return "bool"
@@ -69,7 +101,32 @@ type Column struct {
 	DataType      string `gorm:"column:DATA_TYPE"`
 	ColumnKey     string `gorm:"column:COLUMN_KEY"`
 	ColumnType    string `gorm:"column:COLUMN_TYPE"`
+	ColumnDefault string `gorm:"column:COLUMN_DEFAULT"`
 	Extra         string `gorm:"column:EXTRA"`
+	IsNullable    string `gorm:"column:IS_NULLABLE"`
+}
+
+func (c *Column) IsPrimaryKey() bool {
+	return c != nil && c.ColumnKey == "PRI"
+}
+
+func (c *Column) AutoIncrement() bool {
+	return c != nil && c.Extra == "auto_increment"
+}
+
+func (c *Column) buildGormTag() string {
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("column:%s;type:%s", c.ColumnName, c.ColumnType))
+	if c.IsPrimaryKey() {
+		buf.WriteString(";primaryKey")
+		buf.WriteString(fmt.Sprintf(";autoIncrement:%t", c.AutoIncrement()))
+	} else if c.IsNullable != "YES" {
+		buf.WriteString(";not null")
+	}
+	if c.ColumnDefault != "" {
+		buf.WriteString(fmt.Sprintf(";default:%s", c.ColumnDefault))
+	}
+	return buf.String()
 }
 
 // Member user input structures
@@ -81,6 +138,7 @@ type Member struct {
 	ColumnComment string
 	ModelType     string
 	JSONTag       string
+	GORMTag       string
 	NewTag        string
 }
 
@@ -108,5 +166,6 @@ func toMember(field *Column) *Member {
 		ColumnName:    field.ColumnName,
 		ColumnComment: field.ColumnComment,
 		JSONTag:       field.ColumnName,
+		GORMTag:       field.buildGormTag(),
 	}
 }

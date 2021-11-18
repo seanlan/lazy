@@ -12,7 +12,7 @@ var {{.StructName}}Columns = struct {
 
 type {{.StructName}} struct {
     {{range .Members}}
-    {{.Name}} {{.ModelType}} `json:"{{.JSONTag}}"`  //{{.ColumnComment}}{{end}}
+    {{.Name}} {{.ModelType}} `json:"{{.JSONTag}}" gorm:"{{.GORMTag}}"`  //{{.ColumnComment}}{{end}}
 }
 
 // TableName {{.StructName}}'s table name
