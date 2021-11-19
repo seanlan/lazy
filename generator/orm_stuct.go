@@ -156,9 +156,6 @@ func getTbColumns(db *gorm.DB, schemaName string, tableName string) (result []*C
 
 func toMember(field *Column) *Member {
 	memberType := dataType.Get(field.DataType, field.ColumnType)
-	if field.ColumnName == "deleted_at" && memberType == "time.Time" {
-		memberType = "gorm.DeletedAt"
-	}
 	return &Member{
 		Name:          field.ColumnName,
 		Type:          memberType,
