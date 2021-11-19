@@ -18,7 +18,6 @@ package cmd
 import (
 	"github.com/seanlan/lazy/generator"
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
 	"os/exec"
 )
 
@@ -27,7 +26,6 @@ var daoCmd = &cobra.Command{
 	Use:   "dao",
 	Short: "generate gorm dao model",
 	Run: func(cmd *cobra.Command, args []string) {
-		zap.S().Info()
 		dbStr, _ := cmd.Flags().GetString("conn")
 		database, _ := cmd.Flags().GetString("database")
 		packageName, _ := cmd.Flags().GetString("package")

@@ -1,7 +1,7 @@
 dbuser="root"
 dbpwd="q145145145"
 dbhost="127.0.0.1:3306"
-dbname="mutual"
+dbname="event"
 conn="$dbuser:$dbpwd@tcp($dbhost)/$dbname?parseTime=true&loc=Local&charset=utf8mb4&collation=utf8mb4_unicode_ci"
 package="github.com/seanlan/lazy"
 template=""
