@@ -5,6 +5,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	_schema "gorm.io/gorm/schema"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -23,7 +24,12 @@ type GormDaoGenerator struct {
 }
 
 func NewGormGenerator(connStr, database, packageName, tmplPath, modelPackage, modelPath, daoPackage, daoPath string) *GormDaoGenerator {
-	db, err := gorm.Open(mysql.Open(connStr), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(connStr),
+		&gorm.Config{
+			NamingStrategy: _schema.NamingStrategy{
+				TablePrefix: "", SingularTable: true,
+			},
+		})
 	if err != nil {
 		zap.S().Info("mysql connect failed ")
 		return nil

@@ -22,26 +22,28 @@ import (
 	"text/template"
 )
 
+func testFunc(cmd *cobra.Command, args []string) {
+	tmp := `{{if .result}} 1111 {{else}} 2222 {{end}}`
+	tmpl, err := template.New("name").Parse(tmp)
+	if err != nil {
+		zap.S().Info(err)
+		return
+	}
+	data := map[string]interface{}{"result": false}
+	var buff bytes.Buffer
+	err = tmpl.Execute(&buff, data)
+	if err != nil {
+		zap.S().Info(err)
+		return
+	}
+	zap.S().Info(buff.String())
+}
+
 // testCmd represents the test command
 var testCmd = &cobra.Command{
 	Use:   "test",
 	Short: "test command",
-	Run: func(cmd *cobra.Command, args []string) {
-		tmp := `{{if .result}} 1111 {{else}} 2222 {{end}}`
-		tmpl, err := template.New("name").Parse(tmp)
-		if err != nil {
-			zap.S().Info(err)
-			return
-		}
-		data := map[string]interface{}{"result": false}
-		var buff bytes.Buffer
-		err = tmpl.Execute(&buff, data)
-		if err != nil {
-			zap.S().Info(err)
-			return
-		}
-		zap.S().Info(buff.String())
-	},
+	Run: testFunc,
 }
 
 func init() {
