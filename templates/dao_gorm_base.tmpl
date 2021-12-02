@@ -41,6 +41,18 @@ func E(expr string, args ...interface{}) clause.Expr {
 	return clause.Expr{SQL: expr, Vars: args}
 }
 
+func And(exprs ...clause.Expression) clause.Expression {
+	return clause.And(exprs...)
+}
+
+func Or(exprs ...clause.Expression) clause.Expression {
+	return clause.Or(exprs...)
+}
+
+func Not(exprs ...clause.Expression) clause.Expression {
+	return clause.Not(exprs...)
+}
+
 // BuildInfo is used to define the application build info, and inject values into via the build process.
 type BuildInfo struct {
 

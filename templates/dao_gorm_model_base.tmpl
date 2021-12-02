@@ -55,3 +55,11 @@ func (field FieldBase) Mul(value interface{}) clause.Expression {
 		Vars: []interface{}{value},
 	}
 }
+
+func (field FieldBase) Desc() string {
+	return field.FieldName + " DESC"
+}
+
+func (field FieldBase) Asc() string {
+	return field.FieldName + " ASC"
+}

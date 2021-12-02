@@ -16,34 +16,57 @@ limitations under the License.
 package cmd
 
 import (
-	"bytes"
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
-	"text/template"
 )
 
 func testFunc(cmd *cobra.Command, args []string) {
-	tmp := `{{if .result}} 1111 {{else}} 2222 {{end}}`
-	tmpl, err := template.New("name").Parse(tmp)
-	if err != nil {
-		zap.S().Info(err)
-		return
-	}
-	data := map[string]interface{}{"result": false}
-	var buff bytes.Buffer
-	err = tmpl.Execute(&buff, data)
-	if err != nil {
-		zap.S().Info(err)
-		return
-	}
-	zap.S().Info(buff.String())
+	//connStr := "root:q145145145@tcp(127.0.0.1:3306)/lucky?parseTime=true&loc=Local&charset=utf8mb4&collation=utf8mb4_unicode_ci"
+	//db, _ := gorm.Open(mysql.Open(connStr),
+	//	&gorm.Config{
+	//		NamingStrategy: _schema.NamingStrategy{
+	//			TablePrefix: "", SingularTable: true,
+	//		},
+	//	})
+	//dao.DB = db.Debug()
+	//ctx := context.Background()
+	//q := sqlmodel.AdminUserColumns
+	//var aus []sqlmodel.AdminUser
+	//var au sqlmodel.AdminUser
+	//zap.S().Info(dao.CountAdminUser(ctx, nil))
+	//zap.S().Info(dao.SumAdminUser(ctx, q.ID, dao.And(q.ID.Eq(1), q.Username.Eq("seanlan"))))
+	//zap.S().Info(dao.FetchAllAdminUser(
+	//	ctx, &aus,
+	//	dao.And(q.ID.Eq(1), q.Username.Eq("seanlan")), 2, 10,
+	//	q.ID.Desc(), q.CreateAt.Desc()))
+	//zap.S().Info(
+	//	dao.FetchAdminUser(ctx, &au,
+	//		dao.And(q.ID.Eq(1), q.Username.Eq("seanlan")),
+	//		q.ID.Desc(), q.CreateAt.Desc()))
+	//zap.S().Info(dao.AddAdminUser(ctx, &sqlmodel.AdminUser{
+	//	Password: "seanlan",
+	//	Username: "seanlan",
+	//}))
+	//zap.S().Info(dao.AddsAdminUser(ctx, &[]sqlmodel.AdminUser{
+	//	{
+	//		Password: "seanlan",
+	//		Username: "seanlan",
+	//	},
+	//	{
+	//		Password: "seanlan",
+	//		Username: "seanlan",
+	//	},
+	//}))
+	//au.Password = "111111"
+	//zap.S().Info(dao.UpdateAdminUser(ctx, &au))
+	//zap.S().Info(dao.UpsertAdminUser(ctx, &au, dao.M{q.Password.FieldName: "99999"}))
+	//zap.S().Info(dao.DeleteAdminUser(ctx, q.Account.Eq("")))
 }
 
 // testCmd represents the test command
 var testCmd = &cobra.Command{
 	Use:   "test",
 	Short: "test command",
-	Run: testFunc,
+	Run:   testFunc,
 }
 
 func init() {
