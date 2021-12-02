@@ -146,6 +146,7 @@ type BaseStruct struct {
 	Package    string
 	StructName string
 	TableName  string
+	Imports    string
 	Members    []*Member
 }
 

@@ -73,11 +73,20 @@ func (g *GormDaoGenerator) GenTableStruct(tableName string) BaseStruct {
 		TableName:  tableName,
 	}
 	cols, _ := getTbColumns(g.DB, g.Database, tableName)
+	var imports = make([]string, 0)
+	var hasTime bool
 	for _, col := range cols {
 		m := toMember(col)
 		m.Name = g.DB.NamingStrategy.SchemaName(m.Name)
 		base.Members = append(base.Members, m)
+		if m.ModelType == "time.Time" {
+			hasTime = true
+		}
 	}
+	if hasTime {
+		imports = append(imports, "\"time\"")
+	}
+	base.Imports = "import (\n" + strings.Join(imports, "\n") + "\n)"
 	return base
 }
 

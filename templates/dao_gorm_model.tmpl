@@ -25,6 +25,8 @@ type Member struct {
 
 package {{.Package}}
 
+{{.Imports}}
+
 const TableName{{.StructName}} = "{{.TableName}}"
 
 var {{.StructName}}Columns = struct {
