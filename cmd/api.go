@@ -28,13 +28,13 @@ var apiCmd = &cobra.Command{
 	Use:   "api",
 	Short: "generate api service model",
 	Run: func(cmd *cobra.Command, args []string) {
-		tmplDir := ""
-		packageName := "lazy"
-		modelName := "test"
-		apiName := "TestApi2"
-		apiOutPath := "./app/api/v1"
-		modelOutPath := "./app/model"
-		serviceOutPath := "./app/service"
+		tmplDir, _ := cmd.Flags().GetString("template")
+		packageName, _ := cmd.Flags().GetString("package")
+		modelName, _ := cmd.Flags().GetString("model")
+		apiName, _ := cmd.Flags().GetString("api")
+		apiOutPath, _ := cmd.Flags().GetString("api-out")
+		modelOutPath, _ := cmd.Flags().GetString("model-out")
+		serviceOutPath, _ := cmd.Flags().GetString("service-out")
 		err := os.MkdirAll(apiOutPath, os.ModePerm)
 		if err != nil {
 			zap.S().Info("mkdir error: ", err, apiOutPath)
@@ -50,12 +50,22 @@ var apiCmd = &cobra.Command{
 			zap.S().Info("mkdir error: ", err, serviceOutPath)
 			return
 		}
-
+		var (
+			_modelOutPath   string
+			_serviceOutPath string
+			_apiOutPath     string
+		)
+		_modelOutPath = modelOutPath
+		_serviceOutPath = serviceOutPath
+		_apiOutPath = apiOutPath
 		apiMap := map[string]interface{}{
 			"PackageName":   packageName,
 			"ApiName":       apiName,
 			"ReqStructName": apiName + "Req",
 			"ServiceName":   apiName,
+			"ModelPath":     _modelOutPath,
+			"ApiPath":       _apiOutPath,
+			"ServicePath":   _serviceOutPath,
 		}
 		apiOutFile := filepath.Join(apiOutPath, modelName+".go")
 		generator.RenderWithMap(apiOutFile, tmplDir, "gin_api.tmpl", apiMap, false)
@@ -70,6 +80,9 @@ var apiCmd = &cobra.Command{
 			"ServiceName":    apiName,
 			"ReqStructName":  apiName + "Req",
 			"RespStructName": apiName + "Resp",
+			"ModelPath":      _modelOutPath,
+			"ApiPath":        _apiOutPath,
+			"ServicePath":    _serviceOutPath,
 		}
 		serviceOutFile := filepath.Join(serviceOutPath, modelName+".go")
 		generator.RenderWithMap(serviceOutFile, tmplDir, "gin_service.tmpl", serviceMap, false)
@@ -78,6 +91,44 @@ var apiCmd = &cobra.Command{
 }
 
 func init() {
+	var err error
+	apiCmd.Flags().String("model", "model", "request/response model package name")
+	err = apiCmd.MarkFlagRequired("model")
+	if err != nil {
+		zap.S().Error(err)
+		return
+	}
+	apiCmd.Flags().String("api", "api", "api name")
+	err = apiCmd.MarkFlagRequired("api")
+	if err != nil {
+		zap.S().Error(err)
+		return
+	}
+	apiCmd.Flags().String("api-out", "api-out", "api output path")
+	err = apiCmd.MarkFlagRequired("api-out")
+	if err != nil {
+		zap.S().Error(err)
+		return
+	}
+	apiCmd.Flags().String("model-out", "model-out", "model output path")
+	err = apiCmd.MarkFlagRequired("model-out")
+	if err != nil {
+		zap.S().Error(err)
+		return
+	}
+	apiCmd.Flags().String("service-out", "service-out", "service output path")
+	err = apiCmd.MarkFlagRequired("service-out")
+	if err != nil {
+		zap.S().Error(err)
+		return
+	}
+	apiCmd.Flags().String("package", "", "project package name")
+	err = apiCmd.MarkFlagRequired("package")
+	if err != nil {
+		zap.S().Error(err)
+		return
+	}
+	apiCmd.Flags().String("template", "", "template dir")
 	rootCmd.AddCommand(apiCmd)
 
 	// Here you will define your flags and configuration settings.

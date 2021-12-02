@@ -6,11 +6,9 @@ package service
 
 import (
 	"context"
-	"{{.PackageName}}/app/e"
-	"{{.PackageName}}/app/model"
+	"{{.PackageName}}/{{.ModelPath}}"
 )
 {{end}}
-func {{.ServiceName}}(ctx context.Context, userID int64, req model.{{.ReqStructName}}) (ecode int, resp model.{{.RespStructName}}) {
-	ecode = e.SUCCESS
+func {{.ServiceName}}(ctx context.Context, userID int64, req model.{{.ReqStructName}}) (err error, resp model.{{.RespStructName}}) {
 	return
 }

@@ -9,5 +9,5 @@ modelPackage="sqlmodel"
 modelPath="app/dao/sqlmodel"
 daoPackage="dao"
 daoPath="app/dao"
-go run main.go dao --conn=$conn --database=$dbname --package=$package --template=$template \
+lazy dao --conn=$conn --database=$dbname --package=$package --template=$template \
  --model=$modelPackage --model-path=$modelPath --dao=$daoPackage --dao-path=$daoPath

@@ -61,6 +61,7 @@ func RenderWithStruct(outPath, tmplDir, tmplName string, data interface{}, cover
 }
 
 func RenderWithMap(outPath, tmplDir, tmplName string, data map[string]interface{}, cover bool) {
+	zap.S().Debug(outPath)
 	var err error
 	var buff bytes.Buffer
 	var content string
@@ -107,7 +108,6 @@ func RenderWithMap(outPath, tmplDir, tmplName string, data map[string]interface{
 			fs, err = os.OpenFile(outPath, os.O_WRONLY|os.O_TRUNC, 0666)
 		}
 	}
-	zap.S().Infof("map : %+v", data)
 	if err != nil {
 		zap.S().Info(err)
 		return

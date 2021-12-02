@@ -4,18 +4,8 @@
 
 package model
 
-import (
-	"github.com/gin-gonic/gin"
-	"{{.PackageName}}/app/api"
-    "{{.PackageName}}/app/e"
-    "{{.PackageName}}/app/middleware"
-    "{{.PackageName}}/app/model"
-    "{{.PackageName}}/app/service"
-)
 {{end}}
 type {{.ReqStructName}} struct {
-	BaseReq
-	// form:"field" json:"field"
 	Token string `form:"token" json:"token" binding:"required"`
 }
 
