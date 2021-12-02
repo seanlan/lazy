@@ -105,6 +105,10 @@ func (g *GormDaoGenerator) Gen() {
 		zap.S().Info("mkdir error : " + modelOutPath)
 		return
 	}
+	modelBaseFile := filepath.Join(modelOutPath, "base.go")
+	RenderWithStruct(modelBaseFile, g.TmplPath, "dao_gorm_model_base.tmpl",
+		BaseStruct{Package: g.ModelPackageName}, true)
+
 	for _, model := range sqlModels {
 		outFile := filepath.Join(modelOutPath, model.TableName+".go")
 		RenderWithStruct(outFile, g.TmplPath, "dao_gorm_model.tmpl", model, true)

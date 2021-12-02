@@ -11,8 +11,7 @@ const (
 	ModelPkg = "model"
 
 	//query table structure
-	columnQuery = "SELECT COLUMN_NAME ,COLUMN_COMMENT ,DATA_TYPE ,IS_NULLABLE ,COLUMN_KEY,COLUMN_TYPE,EXTRA" +
-		" FROM information_schema.columns WHERE table_schema = ? AND table_name =?"
+	columnQuery = "SELECT * FROM information_schema.columns WHERE table_schema = ? AND table_name =?"
 )
 
 var (
@@ -136,6 +135,7 @@ type Member struct {
 	NewType       string
 	ColumnName    string
 	ColumnComment string
+	ColumnDefault string
 	ModelType     string
 	JSONTag       string
 	GORMTag       string
@@ -162,6 +162,7 @@ func toMember(field *Column) *Member {
 		ModelType:     memberType,
 		ColumnName:    field.ColumnName,
 		ColumnComment: field.ColumnComment,
+		ColumnDefault: field.ColumnDefault,
 		JSONTag:       field.ColumnName,
 		GORMTag:       field.buildGormTag(),
 	}
