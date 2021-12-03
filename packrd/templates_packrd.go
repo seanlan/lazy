@@ -5,5 +5,6 @@ import (
 )
 
 func init() {
-	packr.New("lazy", "../templates")
+	packr.New("lazy-templates", "../templates")
+	packr.New("lazy-scripts", "../scripts")
 }

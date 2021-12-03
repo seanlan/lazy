@@ -22,7 +22,7 @@ func RenderWithStruct(outPath, tmplDir, tmplName string, data interface{}, cover
 			return
 		}
 	} else {
-		content, err := packr.New("lazy", "../templates").FindString(tmplName)
+		content, err := packr.New("lazy-templates", "../templates").FindString(tmplName)
 		if err != nil {
 			zap.S().Info(err)
 			return
@@ -73,7 +73,7 @@ func RenderWithMap(outPath, tmplDir, tmplName string, data map[string]interface{
 			return
 		}
 	} else {
-		content, err := packr.New("lazy", "../templates").FindString(tmplName)
+		content, err := packr.New("lazy-templates", "../templates").FindString(tmplName)
 		if err != nil {
 			zap.S().Info(err)
 			return

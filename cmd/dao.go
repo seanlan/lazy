@@ -34,14 +34,6 @@ var daoCmd = &cobra.Command{
 		modelPath, _ := cmd.Flags().GetString("model-path")
 		daoPackage, _ := cmd.Flags().GetString("dao")
 		daoPath, _ := cmd.Flags().GetString("dao-path")
-		//dbStr := "root:q145145145@tcp(127.0.0.1:3306)/mutual?parseTime=true&loc=Local&charset=utf8mb4&collation=utf8mb4_unicode_ci"
-		//database := "mutual"
-		//packageName := "github.com/seanlan/lazy"
-		//tmplPath := "./templates"
-		//modelPackage := "sqlmodel"
-		//modelPath := "dao/sqlmodel"
-		//daoPackage := "dao"
-		//daoPath := "./dao"
 		g := generator.NewGormGenerator(dbStr, database, packageName, tmplPath,
 			modelPackage, modelPath, daoPackage, daoPath)
 		if g == nil {

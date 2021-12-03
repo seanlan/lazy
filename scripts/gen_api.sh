@@ -1,3 +1,7 @@
+if [ $# != 2 ] ; then
+    echo "Usage: $0 <model> <api-name>"
+    exit 1
+fi
 model=$1
 api=$2
 apiout="app/api/v1"
