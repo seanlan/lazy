@@ -28,7 +28,7 @@ func {{.ApiName}}(c *gin.Context) {
     if err != nil {
         return
     }
-    err, resp := service.TestFunc(c, userID, req)
+    err, resp := service.{{.ServiceName}}(c, userID, req)
     r.JsonReturn(err, resp)
     return
 }
