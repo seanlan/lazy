@@ -9,6 +9,6 @@ import (
 	"{{.PackageName}}/{{.ModelPath}}"
 )
 {{end}}
-func {{.ServiceName}}(ctx context.Context, userID int64, req model.{{.ReqStructName}}) (err error, resp model.{{.RespStructName}}) {
+func {{.ServiceName}}(ctx context.Context, userID int64, req model.{{.ReqStructName}}) (resp model.{{.RespStructName}}, err error) {
 	return
 }
