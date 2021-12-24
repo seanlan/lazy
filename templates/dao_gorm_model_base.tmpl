@@ -14,8 +14,8 @@ func (field FieldBase) Neq(value interface{}) clause.Expression {
 	return clause.Neq{Column: field.FieldName , Value: value}
 }
 
-func (field FieldBase) In(values ...interface{}) clause.Expression {
-	return clause.IN{Column: field.FieldName , Values: values}
+func (field FieldBase) In(value interface{}) clause.Expression {
+	return clause.Expr{SQL: field.FieldName + " IN ? ", Vars: []interface{}{value}}
 }
 
 func (field FieldBase) Gt(value interface{}) clause.Expression {
