@@ -28,13 +28,14 @@ var daoCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		dbStr, _ := cmd.Flags().GetString("conn")
 		database, _ := cmd.Flags().GetString("database")
+		prefix, _ := cmd.Flags().GetString("prefix")
 		packageName, _ := cmd.Flags().GetString("package")
 		tmplPath, _ := cmd.Flags().GetString("template")
 		modelPackage, _ := cmd.Flags().GetString("model")
 		modelPath, _ := cmd.Flags().GetString("model-path")
 		daoPackage, _ := cmd.Flags().GetString("dao")
 		daoPath, _ := cmd.Flags().GetString("dao-path")
-		g := generator.NewGormGenerator(dbStr, database, packageName, tmplPath,
+		g := generator.NewGormGenerator(dbStr, database, prefix, packageName, tmplPath,
 			modelPackage, modelPath, daoPackage, daoPath)
 		if g == nil {
 			return
@@ -50,6 +51,7 @@ func init() {
 	daoCmd.MarkFlagRequired("conn")
 	daoCmd.Flags().String("database", "", "mysql select database name")
 	daoCmd.MarkFlagRequired("database")
+	daoCmd.Flags().String("prefix", "", "mysql table name prefix")
 	daoCmd.Flags().String("package", "", "project package name")
 	daoCmd.MarkFlagRequired("package")
 	daoCmd.Flags().String("template", "", "template dir")

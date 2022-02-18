@@ -23,11 +23,11 @@ type GormDaoGenerator struct {
 	TmplPath         string
 }
 
-func NewGormGenerator(connStr, database, packageName, tmplPath, modelPackage, modelPath, daoPackage, daoPath string) *GormDaoGenerator {
+func NewGormGenerator(connStr, database, prefix, packageName, tmplPath, modelPackage, modelPath, daoPackage, daoPath string) *GormDaoGenerator {
 	db, err := gorm.Open(mysql.Open(connStr),
 		&gorm.Config{
 			NamingStrategy: _schema.NamingStrategy{
-				TablePrefix: "", SingularTable: true,
+				TablePrefix: prefix, SingularTable: true,
 			},
 		})
 	if err != nil {

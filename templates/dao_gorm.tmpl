@@ -30,16 +30,16 @@ func Sum{{.StructName}}(ctx context.Context, sumField {{.ModelPackageName}}.Fiel
 	return sumValue.N, err
 }
 
-func FetchAll{{.StructName}}(ctx context.Context, records interface{}, expr clause.Expression, page, pagesize int, orders ...string) (err error) {
+func FetchAll{{.StructName}}(ctx context.Context, records interface{}, expr clause.Expression, page, size int, orders ...string) (err error) {
 	db := GetDB(ctx).WithContext(ctx).Model(&{{.ModelPackageName}}.{{.StructName}}{})
 	if expr != nil {
 		db = db.Where(expr)
 	}
 	if page > 0 {
-		offset := (page - 1) * pagesize
-		db = db.Offset(offset).Limit(pagesize)
+		offset := (page - 1) * size
+		db = db.Offset(offset).Limit(size)
 	} else {
-		db = db.Limit(pagesize)
+		db = db.Limit(size)
 	}
 	for _, order := range orders {
 		db = db.Order(order)
@@ -62,6 +62,14 @@ func Fetch{{.StructName}}(ctx context.Context, record interface{}, expr clause.E
 	if err = db.First(record).Error; err != nil {
 		err = ErrNotFound
 		return err
+	}
+	return nil
+}
+
+func Save{{.StructName}}(ctx context.Context, d *{{.ModelPackageName}}.{{.StructName}}) (err error) {
+	db := GetDB(ctx).WithContext(ctx).Model(&{{.ModelPackageName}}.{{.StructName}}{}).Save(d)
+	if err = db.Error; err != nil {
+		return ErrInsertFailed
 	}
 	return nil
 }

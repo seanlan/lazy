@@ -75,9 +75,9 @@ var (
 		"bit":        func(ct string) string { return "[]uint8" },
 		"boolean":    func(ct string) string { return "bool" },
 		"tinyint": func(detailType string) string {
-			if strings.HasPrefix(detailType, "tinyint(1)") {
-				return "bool"
-			}
+			//if strings.HasPrefix(detailType, "tinyint(1)") {
+			//	return "bool"
+			//}
 			return "int32"
 		},
 	}
