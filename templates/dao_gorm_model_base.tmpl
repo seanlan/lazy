@@ -56,6 +56,13 @@ func (field FieldBase) Mul(value interface{}) clause.Expression {
 	}
 }
 
+func (field FieldBase) IF(symbol string, c, value interface{}) clause.Expression {
+	return clause.Expr{
+		SQL:  "IF("+ field.FieldName + symbol + " ? ,?,"+ field.FieldName +")",
+		Vars: []interface{}{c, value},
+	}
+}
+
 func (field FieldBase) Desc() string {
 	return field.FieldName + " DESC"
 }
