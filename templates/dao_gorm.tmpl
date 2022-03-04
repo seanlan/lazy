@@ -5,8 +5,10 @@ package {{.DaoPackageName}}
 
 import (
 	"context"
+	"errors"
 	"{{.ModelFQPN}}"
-	"gorm.io/gorm/clause"
+	"gorm.io/gorm"
+    "gorm.io/gorm/clause"
 )
 
 func Count{{.StructName}}(ctx context.Context, expr clause.Expression) (totalRows int64, err error) {
@@ -15,7 +17,7 @@ func Count{{.StructName}}(ctx context.Context, expr clause.Expression) (totalRow
 		db = db.Where(expr)
 	}
 	db.Count(&totalRows)
-	return totalRows, nil
+	return totalRows, db.Error
 }
 
 func Sum{{.StructName}}(ctx context.Context, sumField {{.ModelPackageName}}.FieldBase, expr clause.Expression) (sum int64, err error) {
@@ -44,7 +46,8 @@ func FetchAll{{.StructName}}(ctx context.Context, records interface{}, expr clau
 	for _, order := range orders {
 		db = db.Order(order)
 	}
-	if err = db.Find(records).Error; err != nil {
+	err = db.Find(records).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = ErrNotFound
 		return err
 	}
@@ -59,7 +62,8 @@ func Fetch{{.StructName}}(ctx context.Context, record interface{}, expr clause.E
 	for _, order := range orders {
 		db = db.Order(order)
 	}
-	if err = db.First(record).Error; err != nil {
+	err = db.First(record).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = ErrNotFound
 		return err
 	}
