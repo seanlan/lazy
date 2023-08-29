@@ -20,9 +20,9 @@ func Count{{.StructName}}(ctx context.Context, expr clause.Expression) (totalRow
 	return totalRows, db.Error
 }
 
-func Sum{{.StructName}}(ctx context.Context, sumField {{.ModelPackageName}}.FieldBase, expr clause.Expression) (sum int64, err error) {
+func Sum{{.StructName}}(ctx context.Context, sumField {{.ModelPackageName}}.FieldBase, expr clause.Expression) (sum float64, err error) {
 	var sumValue = struct {
-		N int64 `json:"n"`
+		N float64 `json:"n"`
 	}{}
 	db := GetDB(ctx).WithContext(ctx).Model(&{{.ModelPackageName}}.{{.StructName}}{})
 	if expr != nil {
@@ -38,11 +38,12 @@ func FetchAll{{.StructName}}(ctx context.Context, records interface{}, expr clau
 		db = db.Where(expr)
 	}
 	if page > 0 {
-		offset := (page - 1) * size
-		db = db.Offset(offset).Limit(size)
-	} else {
-		db = db.Limit(size)
-	}
+        offset := (page - 1) * size
+        db = db.Offset(offset)
+    }
+    if size > 0 {
+        db = db.Offset(size)
+    }
 	for _, order := range orders {
 		db = db.Order(order)
 	}

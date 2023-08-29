@@ -27,13 +27,13 @@ package {{.Package}}
 
 {{.Imports}}
 
-const TableName{{.StructName}} = "{{.TableName}}"
+const TableName{{.StructName}} = "`{{.TableName}}`"
 
 var {{.StructName}}Columns = struct {
     {{range .Members}}{{.Name}}    FieldBase
     {{end}}
 }{
-    {{range .Members}}{{.Name}}: FieldBase{"`{{.ColumnName}}`"},
+    {{range .Members}}{{.Name}}: FieldBase{ "`{{$.TableName}}`", "`{{.ColumnName}}`"},
     {{end}}
 }
 

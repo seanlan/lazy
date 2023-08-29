@@ -4,9 +4,9 @@ if [ $# != 2 ] ; then
 fi
 model=$1
 api=$2
-apiout="app/api/v1"
-modelout="app/model"
-serviceout="app/service"
+apiout="internal/api/v1"
+modelout="internal/model"
+serviceout="internal/service"
 package="github.com/seanlan/lazy"
 template=""
 lazy api --package=$package --template=$template \

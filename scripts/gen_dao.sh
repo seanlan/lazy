@@ -6,8 +6,8 @@ conn="$dbuser:$dbpwd@tcp($dbhost)/$dbname?parseTime=true&loc=Local&charset=utf8m
 package="github.com/seanlan/lazy"
 template=""
 modelPackage="sqlmodel"
-modelPath="app/dao/sqlmodel"
+modelPath="internal/dao/sqlmodel"
 daoPackage="dao"
-daoPath="app/dao"
+daoPath="internal/dao"
 lazy dao --conn=$conn --database=$dbname --package=$package --template=$template \
  --model=$modelPackage --model-path=$modelPath --dao=$daoPackage --dao-path=$daoPath
