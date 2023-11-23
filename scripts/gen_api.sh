@@ -4,10 +4,11 @@ if [ $# != 2 ] ; then
 fi
 model=$1
 api=$2
+workdir=$(dirname $0)
 apiout="internal/api/v1"
 modelout="internal/model"
 serviceout="internal/service"
-package="github.com/seanlan/lazy"
-template=""
+package="fish"
+template=$workdir"/templates"
 lazy api --package=$package --template=$template \
   --model=$model --api=$api --api-out=$apiout --model-out=$modelout --service-out=$serviceout
