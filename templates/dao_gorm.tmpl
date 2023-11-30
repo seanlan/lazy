@@ -97,7 +97,7 @@ func Adds{{.StructName}}(ctx context.Context, d *[]{{.ModelPackageName}}.{{.Stru
 
 func Update{{.StructName}}(ctx context.Context, updated *{{.ModelPackageName}}.{{.StructName}}) (RowsAffected int64, err error) {
     if updated.ID == 0 {
-        return -1, errors.New("primary key cannot be zero")
+        return -1, ErrUpdateFailed
     }
 	db := GetDB(ctx).WithContext(ctx).Save(updated)
 	if err = db.Error; err != nil {
