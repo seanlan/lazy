@@ -10,7 +10,24 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"unicode"
 )
+
+func toPascalCase(input string) string {
+	// 分割字符串为单词，支持多种分隔符
+	splitFunc := func(c rune) bool {
+		return c == '_' || c == '-' || unicode.IsSpace(c)
+	}
+	words := strings.FieldsFunc(input, splitFunc)
+
+	// 将每个单词的首字母转为大写
+	for i, word := range words {
+		words[i] = strings.Title(word)
+	}
+
+	// 连接单词成为一个字符串
+	return strings.Join(words, "")
+}
 
 type GormDaoGenerator struct {
 	DB               *gorm.DB
@@ -69,22 +86,18 @@ func (g *GormDaoGenerator) Tables() (dbTables []string) {
 func (g *GormDaoGenerator) GenTableStruct(tableName string) BaseStruct {
 	base := BaseStruct{
 		Package:    g.ModelPackageName,
-		StructName: g.DB.NamingStrategy.SchemaName(tableName),
+		StructName: toPascalCase(tableName),
 		TableName:  tableName,
 	}
 	cols, _ := getTbColumns(g.DB, g.Database, tableName)
 	var imports = make([]string, 0)
-	var hasTime bool
 	for _, col := range cols {
 		m := toMember(col)
 		m.Name = g.DB.NamingStrategy.SchemaName(m.Name)
 		base.Members = append(base.Members, m)
 		if m.ModelType == "time.Time" {
-			hasTime = true
+			imports = append(imports, "\"time\"")
 		}
-	}
-	if hasTime {
-		imports = append(imports, "\"time\"")
 	}
 	base.Imports = "import (\n" + strings.Join(imports, "\n") + "\n)"
 	return base
