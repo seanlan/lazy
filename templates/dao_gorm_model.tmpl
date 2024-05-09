@@ -33,7 +33,7 @@ var {{.StructName}}Columns = struct {
     {{range .Members}}{{.Name}}    FieldBase
     {{end}}
 }{
-    {{range .Members}}{{.Name}}: FieldBase{ "`{{$.TableName}}`", "`{{.ColumnName}}`"},
+    {{range .Members}}{{.Name}}: FieldBase{ "{{$.TableName}}", "{{.ColumnName}}"},
     {{end}}
 }
 
