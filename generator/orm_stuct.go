@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"gorm.io/gorm"
-	"strings"
 )
 
 const (
@@ -14,76 +13,59 @@ const (
 	columnQuery = "SELECT * FROM information_schema.columns WHERE table_schema = ? AND table_name =?"
 )
 
+type dataTypeMapping func(detailType string) (finalType string)
+type dataTypeMap map[string]dataTypeMapping
+
 var (
 	defaultDataType             = "string"
-	dataType        dataTypeMap = map[string]func(detailType string) string{
-		"int": func(ct string) string {
-			if strings.Contains(ct, "unsigned") {
-				return "uint32"
-			} else {
-				return "int32"
-			}
-		},
-		"integer": func(ct string) string {
-			if strings.Contains(ct, "unsigned") {
-				return "uint32"
-			} else {
-				return "int32"
-			}
-		},
-		"smallint": func(ct string) string {
-			if strings.Contains(ct, "unsigned") {
-				return "uint32"
-			} else {
-				return "int32"
-			}
-		},
-		"mediumint": func(ct string) string {
-			if strings.Contains(ct, "unsigned") {
-				return "uint32"
-			} else {
-				return "int32"
-			}
-		},
-		"bigint": func(ct string) string {
-			if strings.Contains(ct, "unsigned") {
-				return "uint64"
-			} else {
-				return "int64"
-			}
-		},
-		"float":      func(ct string) string { return "float32" },
-		"double":     func(ct string) string { return "float64" },
-		"decimal":    func(ct string) string { return "float64" },
-		"char":       func(ct string) string { return "string" },
-		"varchar":    func(ct string) string { return "string" },
-		"tinytext":   func(ct string) string { return "string" },
-		"mediumtext": func(ct string) string { return "string" },
-		"longtext":   func(ct string) string { return "string" },
-		"tinyblob":   func(ct string) string { return "[]byte" },
-		"blob":       func(ct string) string { return "[]byte" },
-		"mediumblob": func(ct string) string { return "[]byte" },
-		"longblob":   func(ct string) string { return "[]byte" },
-		"text":       func(ct string) string { return "string" },
-		"json":       func(ct string) string { return "string" },
-		"enum":       func(ct string) string { return "string" },
-		"time":       func(ct string) string { return "time.Time" },
-		"date":       func(ct string) string { return "time.Time" },
-		"datetime":   func(ct string) string { return "time.Time" },
-		"timestamp":  func(ct string) string { return "time.Time" },
-		"year":       func(ct string) string { return "int32" },
-		"bit":        func(ct string) string { return "[]uint8" },
-		"boolean":    func(ct string) string { return "bool" },
-		"tinyint": func(detailType string) string {
-			//if strings.HasPrefix(detailType, "tinyint(1)") {
-			//	return "bool"
-			//}
-			return "int32"
-		},
+	dataType        dataTypeMap = map[string]dataTypeMapping{
+		"numeric":          func(string) string { return "float64" },
+		"integer":          func(string) string { return "int32" },
+		"int":              func(string) string { return "int32" },
+		"smallint":         func(string) string { return "int32" },
+		"mediumint":        func(string) string { return "int32" },
+		"bigint":           func(string) string { return "int64" },
+		"smallserial":      func(string) string { return "int32" },
+		"serial":           func(string) string { return "int32" },
+		"bigserial":        func(string) string { return "int64" },
+		"float":            func(string) string { return "float32" },
+		"real":             func(string) string { return "float64" },
+		"double":           func(string) string { return "float64" },
+		"double precision": func(string) string { return "float64" },
+		"decimal":          func(string) string { return "float64" },
+		"money":            func(string) string { return "float64" },
+		"char":             func(string) string { return "string" },
+		"varchar":          func(string) string { return "string" },
+		"tinytext":         func(string) string { return "string" },
+		"mediumtext":       func(string) string { return "string" },
+		"longtext":         func(string) string { return "string" },
+		"inet":             func(string) string { return "string" },
+		"binary":           func(string) string { return "[]byte" },
+		"varbinary":        func(string) string { return "[]byte" },
+		"tinyblob":         func(string) string { return "[]byte" },
+		"blob":             func(string) string { return "[]byte" },
+		"mediumblob":       func(string) string { return "[]byte" },
+		"longblob":         func(string) string { return "[]byte" },
+		"text":             func(string) string { return "string" },
+		"json":             func(string) string { return "string" },
+		"enum":             func(string) string { return "string" },
+		"time":             func(string) string { return "time.Time" },
+		"date":             func(string) string { return "time.Time" },
+		"datetime":         func(string) string { return "time.Time" },
+		"timestamp":        func(string) string { return "time.Time" },
+		"timestamptz":      func(string) string { return "time.Time" },
+		"interval":         func(string) string { return "time.Duration" },
+		"year":             func(string) string { return "int32" },
+		"bit":              func(string) string { return "[]uint8" },
+		"boolean":          func(string) string { return "bool" },
+		"tinyint":          func(string) string { return "int32" },
+		"uuid":             func(string) string { return "uuid.UUID" },
+		"text[]":           func(string) string { return "pq.StringArray" },
+		"smallint[]":       func(string) string { return "pq.Int32Array" },
+		"integer[]":        func(string) string { return "pq.Int32Array" },
+		"bigint[]":         func(string) string { return "pq.Int64Array" },
 	}
 )
-
-type dataTypeMap map[string]func(string) string
 
 func (m dataTypeMap) Get(dataType, detailType string) string {
 	if convert, ok := m[dataType]; ok {
@@ -166,5 +148,38 @@ func toMember(field *Column) *Member {
 		ColumnDefault: field.ColumnDefault,
 		JSONTag:       field.ColumnName,
 		GORMTag:       field.buildGormTag(),
+	}
+}
+
+func buildGormTag(col gorm.ColumnType) string {
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("column:%s;type:%s", col.Name(), col.DatabaseTypeName()))
+	if isPrimaryKey, _ := col.PrimaryKey(); isPrimaryKey {
+		buf.WriteString(";primaryKey")
+		if isAutoIncrement, _ := col.AutoIncrement(); isAutoIncrement {
+			buf.WriteString(";autoIncrement")
+		}
+	} else if nullable, _ := col.Nullable(); !nullable {
+		buf.WriteString(";not null")
+	}
+	if defaultValue, _ := col.DefaultValue(); defaultValue != "" {
+		buf.WriteString(fmt.Sprintf(";default:%s", defaultValue))
+	}
+	return buf.String()
+}
+
+func toMemberWithColumnType(col gorm.ColumnType) *Member {
+	memberType := dataType.Get(col.DatabaseTypeName(), col.DatabaseTypeName())
+	comment, _ := col.Comment()
+	defaultValue, _ := col.DefaultValue()
+	return &Member{
+		Name:          col.Name(),
+		Type:          memberType,
+		ModelType:     memberType,
+		ColumnName:    col.Name(),
+		ColumnComment: comment,
+		ColumnDefault: defaultValue,
+		JSONTag:       col.Name(),
+		GORMTag:       buildGormTag(col),
 	}
 }

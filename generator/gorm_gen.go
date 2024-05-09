@@ -1,33 +1,17 @@
 package generator
 
 import (
-	"github.com/jimsmart/schema"
+	"fmt"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	_schema "gorm.io/gorm/schema"
+	"gorm.io/gorm/schema"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"unicode"
 )
-
-func toPascalCase(input string) string {
-	// 分割字符串为单词，支持多种分隔符
-	splitFunc := func(c rune) bool {
-		return c == '_' || c == '-' || unicode.IsSpace(c)
-	}
-	words := strings.FieldsFunc(input, splitFunc)
-
-	// 将每个单词的首字母转为大写
-	for i, word := range words {
-		words[i] = strings.Title(word)
-	}
-
-	// 连接单词成为一个字符串
-	return strings.Join(words, "")
-}
 
 type GormDaoGenerator struct {
 	DB               *gorm.DB
@@ -40,13 +24,34 @@ type GormDaoGenerator struct {
 	TmplPath         string
 }
 
+func parseDSN(url string) (string, string, error) {
+	a := strings.SplitN(url, "://", 2)
+	if len(a) != 2 {
+		return "", "", fmt.Errorf(`failed to parse dsn: "%s"`, url)
+	}
+	return a[0], a[1], nil
+}
+
 func NewGormGenerator(connStr, database, prefix, packageName, tmplPath, modelPackage, modelPath, daoPackage, daoPath string) *GormDaoGenerator {
-	db, err := gorm.Open(mysql.Open(connStr),
-		&gorm.Config{
-			NamingStrategy: _schema.NamingStrategy{
-				TablePrefix: prefix, SingularTable: true,
-			},
-		})
+	var (
+		dialect gorm.Dialector
+	)
+	scheme, dail, _err := parseDSN(connStr)
+	if _err != nil {
+		zap.S().Infof("parse dsn error : %s %v", connStr, _err)
+		return nil
+	}
+	switch scheme {
+	case "mysql":
+		dialect = mysql.Open(dail)
+	case "postgres":
+		dialect = postgres.Open(connStr)
+	}
+	db, err := gorm.Open(dialect, &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: prefix, SingularTable: true,
+		},
+	})
 	if err != nil {
 		zap.S().Info("mysql connect failed ")
 		return nil
@@ -65,20 +70,24 @@ func NewGormGenerator(connStr, database, prefix, packageName, tmplPath, modelPac
 
 // Tables 获取所有数据表 不包含分表
 func (g *GormDaoGenerator) Tables() (dbTables []string) {
-	sqlDB, _ := g.DB.DB()
-	schemaTables, _ := schema.TableNames(sqlDB)
+	schemaTables, err := g.DB.Migrator().GetTables()
+	if err != nil {
+		zap.S().Info("get table names error : ", err)
+		return
+	}
 	for _, st := range schemaTables {
 		isShard := false
-		s := strings.Split(st[1], "_")
+		s := strings.Split(st, "_")
 		if len(s) > 0 {
-			_, err := strconv.ParseInt(s[len(s)-1], 10, 64)
+			_, err = strconv.ParseInt(s[len(s)-1], 10, 64)
 			if err == nil {
 				isShard = true
 			}
 		}
-		if st[0] == g.Database && !isShard {
-			dbTables = append(dbTables, st[1])
+		if isShard {
+			continue
 		}
+		dbTables = append(dbTables, st)
 	}
 	return
 }
@@ -86,19 +95,36 @@ func (g *GormDaoGenerator) Tables() (dbTables []string) {
 func (g *GormDaoGenerator) GenTableStruct(tableName string) BaseStruct {
 	base := BaseStruct{
 		Package:    g.ModelPackageName,
-		StructName: toPascalCase(tableName),
+		StructName: g.DB.NamingStrategy.SchemaName(tableName),
 		TableName:  tableName,
 	}
-	cols, _ := getTbColumns(g.DB, g.Database, tableName)
 	var imports = make([]string, 0)
-	for _, col := range cols {
-		m := toMember(col)
+	columns, _ := g.DB.Migrator().ColumnTypes(tableName)
+	for _, col := range columns {
+		m := toMemberWithColumnType(col)
 		m.Name = g.DB.NamingStrategy.SchemaName(m.Name)
 		base.Members = append(base.Members, m)
-		if m.ModelType == "time.Time" {
+		if strings.Contains(m.ModelType, "time.") {
 			imports = append(imports, "\"time\"")
+		} else if strings.Contains(m.ModelType, "pq.") {
+			imports = append(imports, "\"github.com/lib/pq\"")
+		} else if strings.Contains(m.ModelType, "uuid.") {
+			imports = append(imports, "\"github.com/google/uuid\"")
 		}
 	}
+	//cols, _ := getTbColumns(g.DB, g.Database, tableName)
+	//for _, col := range cols {
+	//	m := toMember(col)
+	//	m.Name = g.DB.NamingStrategy.SchemaName(m.Name)
+	//	base.Members = append(base.Members, m)
+	//	if strings.Contains(m.ModelType, "time.") {
+	//		imports = append(imports, "\"time\"")
+	//	} else if strings.Contains(m.ModelType, "pq.") {
+	//		imports = append(imports, "\"github.com/lib/pq\"")
+	//	} else if strings.Contains(m.ModelType, "uuid.") {
+	//		imports = append(imports, "\"github.com/google/uuid\"")
+	//	}
+	//}
 	base.Imports = "import (\n" + strings.Join(imports, "\n") + "\n)"
 	return base
 }
