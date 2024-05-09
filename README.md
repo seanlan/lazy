@@ -3,6 +3,8 @@ code generator
 
 代码生成器
 
+支持数据库 mysql postgresql
+
 新建工程
 ```
 mkdir project
