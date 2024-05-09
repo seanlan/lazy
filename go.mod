@@ -1,6 +1,8 @@
 module github.com/seanlan/lazy
 
-go 1.21
+go 1.22
+
+toolchain go1.22.3
 
 require (
 	github.com/gobuffalo/packr/v2 v2.8.3
