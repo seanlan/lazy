@@ -32,6 +32,8 @@ var (
 		"serial":           func(string) string { return "int32" },
 		"bigserial":        func(string) string { return "int64" },
 		"float":            func(string) string { return "float32" },
+		"float4":           func(string) string { return "float32" },
+		"float8":           func(string) string { return "float64" },
 		"real":             func(string) string { return "float64" },
 		"double":           func(string) string { return "float64" },
 		"double precision": func(string) string { return "float64" },

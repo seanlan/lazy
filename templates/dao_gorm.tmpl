@@ -38,11 +38,10 @@ func FetchAll{{.StructName}}(ctx context.Context, records interface{}, expr clau
 		db = db.Where(expr)
 	}
 	if page > 0 {
-        offset := (page - 1) * size
-        db = db.Offset(offset)
-    }
-    if size > 0 {
-        db = db.Offset(size)
+		db = db.Offset((page - 1) * size)
+	}
+	if size > 0 {
+        db = db.Limit(size)
     }
 	for _, order := range orders {
 		db = db.Order(order)
@@ -52,7 +51,7 @@ func FetchAll{{.StructName}}(ctx context.Context, records interface{}, expr clau
 		err = ErrNotFound
 		return err
 	}
-	return nil
+	return err
 }
 
 func Fetch{{.StructName}}(ctx context.Context, record interface{}, expr clause.Expression, orders ...string) (err error) {
@@ -68,7 +67,7 @@ func Fetch{{.StructName}}(ctx context.Context, record interface{}, expr clause.E
 		err = ErrNotFound
 		return err
 	}
-	return nil
+	return err
 }
 
 func Save{{.StructName}}(ctx context.Context, d *{{.ModelPackageName}}.{{.StructName}}) (err error) {
@@ -96,7 +95,7 @@ func Adds{{.StructName}}(ctx context.Context, d *[]{{.ModelPackageName}}.{{.Stru
 }
 
 func Update{{.StructName}}(ctx context.Context, updated *{{.ModelPackageName}}.{{.StructName}}) (RowsAffected int64, err error) {
-    if updated.ID == 0 {
+	if updated.ID == 0 {
         return -1, ErrUpdateFailed
     }
 	db := GetDB(ctx).WithContext(ctx).Save(updated)
@@ -118,9 +117,14 @@ func Updates{{.StructName}}(ctx context.Context, expr clause.Expression, updated
 	return db.RowsAffected, nil
 }
 
-func Upsert{{.StructName}}(ctx context.Context, d *{{.ModelPackageName}}.{{.StructName}}, upsert map[string]interface{}) (RowsAffected int64, err error) {
+func Upsert{{.StructName}}(ctx context.Context, d *{{.ModelPackageName}}.{{.StructName}}, upsert map[string]interface{}, columns ...string) (RowsAffected int64, err error) {
+	var cols []clause.Column
+		for _, col := range columns {
+		cols = append(cols, clause.Column{Name: col})
+	}
 	db := GetDB(ctx).WithContext(ctx).Model(&{{.ModelPackageName}}.{{.StructName}}{}).Clauses(clause.OnConflict{
 		DoUpdates: clause.Assignments(upsert),
+		Columns:   cols,
 	}).Create(d)
 	if err = db.Error; err != nil {
 		return -1, ErrInsertFailed
