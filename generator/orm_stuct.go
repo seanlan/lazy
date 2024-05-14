@@ -63,6 +63,7 @@ var (
 		"year":             func(string) string { return "int32" },
 		"bit":              func(string) string { return "[]uint8" },
 		"boolean":          func(string) string { return "bool" },
+		"bool":             func(string) string { return "bool" },
 		"tinyint":          func(string) string { return "int32" },
 		"uuid":             func(string) string { return "uuid.UUID" },
 		"text[]":           func(string) string { return "pq.StringArray" },
